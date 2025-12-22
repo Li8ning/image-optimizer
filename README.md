@@ -1,6 +1,6 @@
 # Image Optimizer
 
-A comprehensive image optimization tool with React frontend and Node.js backend that supports multiple image formats and provides various optimization presets.
+A comprehensive image optimization tool (v1.7.0) with React frontend and Node.js backend that supports multiple image formats and provides various optimization presets.
 
 ## Features
 
@@ -102,6 +102,17 @@ node server.js
 - `npm run build`: Creates a production build
 - `npm test`: Runs tests (if configured)
 - `npm run eject`: Ejects from Create React App (if applicable)
+
+## Version History
+
+- **v1.7.0** (Current): Progress tracking and Git setup completed - Real-time progress indicators for individual file processing and complete Git repository setup with remote integration
+- **v1.6.0**: Image preview fix completed - Fixed image preview functionality by implementing proper object URL creation and tracking system with enhanced error handling and fallback UI
+- **v1.5.0**: Infinite re-render fix completed - Fixed critical React infinite re-render error during image upload by refactoring state management and object URL creation to avoid render-time state updates
+- **v1.4.0**: Security enhancements completed - Comprehensive security measures including input validation/sanitization, file type verification using magic numbers, rate limiting, security headers, XSS protection, request validation middleware, secure file handling, and security logging
+- **v1.3.0**: Memory cleanup implementation completed - Comprehensive object URL tracking and cleanup system to prevent memory leaks
+- **v1.2.0**: Error handling improvements - Comprehensive error handling with file validation, server-side validation, user-friendly notifications, error recovery, and detailed logging
+- **v1.1.0**: Frontend unification - React chosen as unified frontend, vanilla JS implementation removed
+- **v1.0.0**: Initial release - Basic image optimization functionality
 
 ## Contributing
 
