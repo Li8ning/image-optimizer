@@ -391,7 +391,9 @@ app.post('/convert', upload.array('images'), async (req, res) => {
         const processImage = async (file) => {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const outputPath = `converted/${Date.now()}-${file.originalname}.webp`;
+                    // Remove original file extension before adding .webp
+                    const fileNameWithoutExt = path.parse(file.originalname).name;
+                    const outputPath = `converted/${Date.now()}-${fileNameWithoutExt}.webp`;
 
                     let sharpInstance = sharp(file.path);
 
