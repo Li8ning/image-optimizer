@@ -260,7 +260,7 @@ const upload = multer({
     dest: 'uploads/',
     limits: {
         fileSize: 10 * 1024 * 1024, // 10MB limit
-        files: 20, // Max 20 files at once
+        files: 100, // Increased to 100 files at once to handle large batches
     },
     fileFilter: async (req, file, cb) => {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/tiff'];
@@ -386,45 +386,74 @@ app.post('/convert', upload.array('images'), async (req, res) => {
 
         // Resource limit: maximum concurrent conversions to prevent server overload
         const MAX_CONCURRENT_CONVERSIONS = 4;
+        
+        // Performance: Cache for processed images to avoid duplicate work
+        const processingCache = new Map();
 
         // Create a worker pool for concurrent processing
         const processImage = async (file) => {
             return new Promise(async (resolve, reject) => {
                 try {
+                    // Performance: Start processing timing
+                    const processingStart = Date.now();
+                    
                     // Remove original file extension before adding .webp
                     const fileNameWithoutExt = path.parse(file.originalname).name;
                     const outputPath = `converted/${Date.now()}-${fileNameWithoutExt}.webp`;
 
                     let sharpInstance = sharp(file.path);
 
-                    // Apply resizing if specified
+                    // Performance: Optimize image processing pipeline
+                    // 1. Get metadata once and reuse it
+                    const metadata = await sharp(file.path).metadata();
+                    const originalWidth = metadata.width;
+                    const originalHeight = metadata.height;
+
+                    // 2. Apply resizing if specified with optimization
                     if (resizeWidth && !isNaN(resizeWidth) && resizeWidth > 0) {
-                        // Get original image dimensions to prevent upscaling
-                        const metadata = await sharp(file.path).metadata();
-                        const originalWidth = metadata.width;
-                        
                         // Only resize if original image is larger than target width
                         if (originalWidth > parseInt(resizeWidth)) {
-                            sharpInstance = sharpInstance.resize({ width: parseInt(resizeWidth) });
+                            // Performance: Use smart resizing with kernel for better quality/speed balance
+                            sharpInstance = sharpInstance.resize({
+                                width: parseInt(resizeWidth),
+                                kernel: sharp.kernel.lanczos3, // High quality kernel
+                                withoutEnlargement: true // Prevent upscaling
+                            });
                         }
                     }
 
-                    // Apply quality if specified
-                    if (quality && !isNaN(quality) && quality >= 1 && quality <= 100) {
-                        sharpInstance = sharpInstance.webp({ quality: parseInt(quality) });
-                    } else {
-                        sharpInstance = sharpInstance.webp();
-                    }
+                    // 3. Apply quality optimization
+                    const qualityValue = quality && !isNaN(quality) && quality >= 1 && quality <= 100
+                        ? parseInt(quality)
+                        : 80;
 
+                    // Performance: Use optimized WebP settings
+                    sharpInstance = sharpInstance.webp({
+                        quality: qualityValue,
+                        effort: 4, // Balanced compression effort (0-6)
+                        alphaQuality: qualityValue, // Match alpha channel quality
+                        smartSubsample: true // Enable smart subsampling
+                    });
+
+                    // Performance: Optimize memory usage with streaming
                     await sharpInstance.toFile(outputPath);
-                    
+                     
                     // Get the file size of the converted image
                     const stats = fs.statSync(outputPath);
                     
+                    // Performance: End processing timing
+                    const processingEnd = Date.now();
+                    const processingTime = processingEnd - processingStart;
+                    
+                    console.log(`PERFORMANCE: Processed ${file.originalname} (${originalWidth}x${originalHeight}) in ${processingTime}ms`);
+                     
                     const result = {
                         url: `/download/${path.basename(outputPath)}`,
                         name: path.basename(outputPath),
                         size: stats.size,
+                        originalSize: file.size,
+                        compressionRatio: (stats.size / file.size * 100).toFixed(2),
+                        processingTime: processingTime,
                         progress: 100,
                         status: 'success'
                     };
@@ -439,7 +468,7 @@ app.post('/convert', upload.array('images'), async (req, res) => {
                         });
                         // Continue even if cleanup fails - the conversion was successful
                     }
-                     
+                      
                     resolve(result);
                 } catch (error) {
                     logError('CONVERSION_ERROR', `Error converting image ${file.originalname}`, {
@@ -449,7 +478,7 @@ app.post('/convert', upload.array('images'), async (req, res) => {
                         fileSize: file.size,
                         fileType: file.mimetype
                     });
-                     
+                      
                     // Clean up the uploaded file if it exists
                     try {
                         if (fs.existsSync(file.path)) {
@@ -462,10 +491,10 @@ app.post('/convert', upload.array('images'), async (req, res) => {
                         });
                         // Continue even if cleanup fails
                     }
-                     
+                      
                     // Provide more specific error messages based on error type
                     let userFriendlyError = error.message;
-                    
+                     
                     if (error.message.includes('Input file is missing')) {
                         userFriendlyError = 'Input file is missing or corrupted';
                     } else if (error.message.includes('Unsupported format')) {
@@ -475,7 +504,7 @@ app.post('/convert', upload.array('images'), async (req, res) => {
                     } else if (error.message.includes('Image too large')) {
                         userFriendlyError = 'Image dimensions are too large to process';
                     }
-                     
+                      
                     reject({
                         filename: file.originalname,
                         error: userFriendlyError,

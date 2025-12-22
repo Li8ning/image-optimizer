@@ -1,7 +1,7 @@
 {
   "name": "image-optimizer",
-  "version": "1.7.0",
-  "description": "",
+  "version": "1.8.0",
+  "description": "Advanced Image Optimizer with batch processing support",
   "main": "index.js",
   "scripts": {
     "start": "react-scripts start",
@@ -25,6 +25,7 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-toastify": "^11.0.5",
+    "react-window": "^2.2.3",
     "sharp": "^0.34.5",
     "validator": "^13.15.26"
   },

@@ -1,6 +1,91 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+// Custom Virtualized Grid Component (replaces react-window)
+const VirtualizedGrid = ({
+    items,
+    renderItem,
+    columnCount = 4,
+    itemHeight = 150,
+    containerHeight = 400,
+    gap = 8
+}) => {
+    const containerRef = useRef(null);
+    const [visibleRange, setVisibleRange] = useState({ start: 0, end: 0 });
+    
+    // Calculate visible items based on scroll position
+    const calculateVisibleRange = useCallback(() => {
+        if (!containerRef.current) return { start: 0, end: Math.min(items.length - 1, columnCount * 4) };
+        
+        const scrollTop = containerRef.current.scrollTop;
+        const startIndex = Math.floor(scrollTop / (itemHeight + gap)) * columnCount;
+        const endIndex = Math.min(
+            startIndex + columnCount * 6, // Render a few extra rows for smooth scrolling
+            items.length - 1
+        );
+        
+        return { start: Math.max(0, startIndex), end: endIndex };
+    }, [items.length, columnCount, itemHeight, gap]);
+    
+    // Update visible range on scroll and resize
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+        
+        const handleScroll = () => {
+            setVisibleRange(calculateVisibleRange());
+        };
+        
+        container.addEventListener('scroll', handleScroll);
+        
+        // Initial calculation
+        setVisibleRange(calculateVisibleRange());
+        
+        return () => {
+            container.removeEventListener('scroll', handleScroll);
+        };
+    }, [calculateVisibleRange]);
+    
+    // Calculate container style
+    const totalHeight = Math.ceil(items.length / columnCount) * (itemHeight + gap);
+    
+    return (
+        <div
+            ref={containerRef}
+            className="virtualized-grid-container overflow-auto"
+            style={{
+                height: `${containerHeight}px`,
+                width: '100%',
+                position: 'relative'
+            }}
+        >
+            <div style={{ height: `${totalHeight}px`, position: 'relative' }}>
+                {items.length > 0 && (
+                    <div
+                        className="grid grid-cols-4 gap-4 p-2"
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            transform: `translateY(${visibleRange.start * (itemHeight + gap) / columnCount}px)`
+                        }}
+                    >
+                        {items.slice(visibleRange.start, visibleRange.end + 1).map((item, index) => {
+                            const absoluteIndex = visibleRange.start + index;
+                            return (
+                                <div key={absoluteIndex} className="p-2" style={{ height: `${itemHeight}px` }}>
+                                    {renderItem({ item, index: absoluteIndex })}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
 
 // Import components
 import ImageUpload from './components/ImageUpload.js';
@@ -36,6 +121,18 @@ function App() {
     const [preset, setPreset] = useState('Custom');
     const [errors, setErrors] = useState([]);
     const [retryQueue, setRetryQueue] = useState([]);
+    
+    // Performance: Debounced state updates for input fields
+    const [debouncedResizeWidth, setDebouncedResizeWidth] = useState(0);
+    const [debouncedQuality, setDebouncedQuality] = useState(80);
+    
+    // Performance: Performance metrics tracking
+    const [performanceMetrics, setPerformanceMetrics] = useState({
+        fileUploadTime: 0,
+        conversionTime: 0,
+        previewGenerationTime: 0,
+        totalProcessingTime: 0
+    });
 
     // Track all created object URLs for cleanup
     const [objectURLs, setObjectURLs] = useState([]);
@@ -82,6 +179,24 @@ function App() {
         }
     }, [images, convertedImages]);
 
+    // Performance: Debounce quality input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedQuality(quality);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [quality]);
+
+    // Performance: Debounce resize width input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedResizeWidth(resizeWidth);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [resizeWidth]);
+
     // Preset configurations
     const presets = {
         'Custom': { quality: 80, resizeWidth: 0 },
@@ -92,7 +207,10 @@ function App() {
 
     const handleFilesUploaded = (files) => {
         console.log('DEBUG: Files selected:', files.length, files.map(f => ({name: f.name, type: f.type, size: f.size, lastModified: f.lastModified})));
-
+        
+        // Performance: Start file upload timing
+        const fileUploadStart = performance.now();
+    
         // Debug: Check if any of these files were recently removed
         const currentImageNames = images.map(img => img.name);
         files.forEach(file => {
@@ -100,40 +218,40 @@ function App() {
                 console.log('DEBUG: File was previously removed and is being re-added:', file.name);
             }
         });
-
+    
         const { validFiles, validationErrors } = validateFiles(files);
-
+    
         if (validationErrors.length > 0) {
             setErrors(prevErrors => [...prevErrors, ...validationErrors]);
             validationErrors.forEach(error => {
                 toast.error(`❌ ${error.message}`);
             });
         }
-
+    
         if (validFiles.length > 0) {
             console.log('DEBUG: Processing valid files for upload:', validFiles.map(f => ({name: f.name, size: f.size})));
             console.log('DEBUG: Valid files to process:', validFiles.length, validFiles.map(f => ({name: f.name, type: f.type})));
-
+    
             // Create preview URLs and track them all at once
             const filesWithPreviews = [];
             const newObjectURLs = [];
-
+    
             validFiles.forEach(file => {
                 try {
                     console.log('DEBUG: Creating preview URL for:', file.name, 'Type:', file.type, 'Size:', file.size);
                     const { fileWithPreview, previewUrl } = createFileWithPreview(file);
-
+    
                     filesWithPreviews.push(fileWithPreview);
                     if (previewUrl) {
                         newObjectURLs.push(previewUrl);
                     }
-
+    
                     console.log('DEBUG: Created file with preview:', {
                         name: fileWithPreview.name,
                         preview: fileWithPreview.preview,
                         previewReady: fileWithPreview.previewReady
                     });
-
+    
                 } catch (error) {
                     console.error('DEBUG: Failed to create preview for file:', file.name, error);
                     const fileWithError = {
@@ -147,29 +265,36 @@ function App() {
                     filesWithPreviews.push(fileWithError);
                 }
             });
-
+    
             console.log('DEBUG: Files with previews created:', filesWithPreviews.length);
             console.log('DEBUG: New object URLs:', newObjectURLs.length);
-
+    
             // Update both states at once to avoid race conditions
             // Use functional updates to ensure we have the latest state
             setImages(prevImages => {
                 const updatedImages = [...prevImages, ...filesWithPreviews];
                 console.log('DEBUG: Images state updated. Total images now:', updatedImages.length);
                 console.log('DEBUG: Updated images array:', updatedImages.map(img => ({name: img.name, previewReady: img.previewReady})));
-
+                
+                // Check for undefined or null values
+                const hasInvalidValues = updatedImages.some(img => img === undefined || img === null);
+                if (hasInvalidValues) {
+                    console.error('DEBUG: Found undefined or null values in images array');
+                    console.error('DEBUG: Invalid images:', updatedImages.filter(img => img === undefined || img === null));
+                }
+                
                 // Force re-render by returning new array
                 return [...updatedImages];
             });
-
+    
             setObjectURLs(prev => {
                 const updatedURLs = [...prev, ...newObjectURLs];
                 console.log('DEBUG: Object URLs state updated. Total URLs now:', updatedURLs.length);
-
+    
                 // Force re-render by returning new array
                 return [...updatedURLs];
             });
-
+    
             // Debug: Check if the images are actually being rendered
             // Use useEffect-style logging to avoid stale state references
             setTimeout(() => {
@@ -177,9 +302,21 @@ function App() {
                 console.log('DEBUG: Files that should have been added:', filesWithPreviews.map(img => ({name: img.name, preview: img.preview, previewReady: img.previewReady})));
                 console.log('DEBUG: Object URLs that should have been added:', newObjectURLs);
             }, 100);
-
+    
+            // Performance: End file upload timing and update metrics
+            const fileUploadEnd = performance.now();
+            const fileUploadDuration = fileUploadEnd - fileUploadStart;
+            
+            setPerformanceMetrics(prev => ({
+                ...prev,
+                fileUploadTime: fileUploadDuration,
+                totalProcessingTime: prev.totalProcessingTime + fileUploadDuration
+            }));
+            
+            console.log(`PERFORMANCE: File upload processed in ${fileUploadDuration.toFixed(2)}ms`);
+    
             toast.success(`✅ ${validFiles.length} file(s) uploaded successfully`);
-
+    
             // Fix: Reset the file input to allow re-selecting the same files
             // This prevents the browser from caching the file selection
             setTimeout(() => {
@@ -221,11 +358,22 @@ function App() {
 
     const handlePresetChange = (selectedPreset) => {
         setPreset(selectedPreset);
-
+    
         // Apply preset settings
         const presetSettings = presets[selectedPreset];
         setQuality(presetSettings.quality);
-        setResizeWidth(presetSettings.resizeWidth);
+        setResizeWidth(presetSettings.quality);
+        setDebouncedQuality(presetSettings.quality);
+        setDebouncedResizeWidth(presetSettings.resizeWidth);
+    };
+    
+    // Performance: Debounced handlers for input fields
+    const handleQualityChange = (value) => {
+        setQuality(value);
+    };
+    
+    const handleResizeWidthChange = (value) => {
+        setResizeWidth(value);
     };
 
     const handleConvert = async () => {
@@ -233,24 +381,27 @@ function App() {
             toast.warning('⚠️ Please upload at least one image to convert');
             return;
         }
-
-        // Validate settings
-        if (quality < 1 || quality > 100) {
+    
+        // Validate settings using debounced values
+        if (debouncedQuality < 1 || debouncedQuality > 100) {
             toast.error('❌ Quality must be between 1 and 100');
             return;
         }
-
-        if (resizeWidth < 0 || resizeWidth > 10000) {
+    
+        if (debouncedResizeWidth < 0 || debouncedResizeWidth > 10000) {
             toast.error('❌ Resize width must be between 0 and 10000 pixels');
             return;
         }
-
+    
         setIsConverting(true);
         setErrors([]);
-
+    
         try {
-            const data = await ApiService.convertImages(images, resizeWidth, quality);
-
+            // Performance: Start conversion timing
+            const conversionStart = performance.now();
+            
+            const data = await ApiService.convertImages(images, debouncedResizeWidth, debouncedQuality);
+    
             if (data.errors && data.errors.length > 0) {
                 const conversionErrors = data.errors.map(error => ({
                     fileName: error.filename,
@@ -258,52 +409,55 @@ function App() {
                     message: `Failed to convert ${error.filename}: ${error.error}`,
                     originalError: error.error
                 }));
-
+    
                 setErrors(prevErrors => [...prevErrors, ...conversionErrors]);
                 conversionErrors.forEach(error => {
                     toast.error(`❌ ${error.message}`);
                 });
-
+    
                 // Add failed files to retry queue
                 const failedFiles = data.errors.map(error =>
                     images.find(img => img.name === error.filename)
                 ).filter(Boolean);
-
+    
                 if (failedFiles.length > 0) {
                     setRetryQueue(prevQueue => [...prevQueue, ...failedFiles]);
                     toast.info(`ℹ️ ${failedFiles.length} file(s) added to retry queue`);
                 }
             }
-
+    
             if (data.convertedImages && data.convertedImages.length > 0) {
+                // Performance: Start preview generation timing
+                const previewGenerationStart = performance.now();
+                
                 // Fetch converted images and create object URLs for previews
                 const fetchConvertedImages = async () => {
                     const imagesWithPreviews = [];
                     const newObjectURLs = [];
-
+    
                     for (const image of data.convertedImages) {
                         try {
                             // Fetch the converted image from the server
                             const blob = await ApiService.fetchConvertedImage(image.url);
-
+    
                             // Create object URL for preview
                             const previewUrl = URL.createObjectURL(blob);
-
+    
                             // Create enhanced image object with preview
                             const imageWithPreview = {
                                 ...image,
                                 preview: previewUrl,
                                 previewReady: true
                             };
-
+    
                             imagesWithPreviews.push(imageWithPreview);
                             newObjectURLs.push(previewUrl);
-
+    
                             console.log('DEBUG: Created preview for converted image:', image.name, previewUrl);
-
+    
                         } catch (error) {
                             console.error('DEBUG: Failed to create preview for converted image:', image.name, error);
-
+    
                             // Add image without preview if fetch fails
                             imagesWithPreviews.push({
                                 ...image,
@@ -312,32 +466,50 @@ function App() {
                             });
                         }
                     }
-
+    
                     // Update both converted images and object URLs
                     setConvertedImages(imagesWithPreviews);
                     setObjectURLs(prev => [...prev, ...newObjectURLs]);
-
+                    
+                    // Performance: End preview generation timing
+                    const previewGenerationEnd = performance.now();
+                    const previewGenerationDuration = previewGenerationEnd - previewGenerationStart;
+                    
+                    // Performance: End conversion timing
+                    const conversionEnd = performance.now();
+                    const conversionDuration = conversionEnd - conversionStart;
+                    
+                    setPerformanceMetrics(prev => ({
+                        ...prev,
+                        conversionTime: conversionDuration,
+                        previewGenerationTime: previewGenerationDuration,
+                        totalProcessingTime: prev.totalProcessingTime + conversionDuration + previewGenerationDuration
+                    }));
+                    
+                    console.log(`PERFORMANCE: Image conversion completed in ${conversionDuration.toFixed(2)}ms`);
+                    console.log(`PERFORMANCE: Preview generation completed in ${previewGenerationDuration.toFixed(2)}ms`);
+    
                     toast.success(`✅ Successfully converted ${imagesWithPreviews.length} image(s)`);
                 };
-
+    
                 fetchConvertedImages();
             }
-
+    
         } catch (error) {
             console.error('Error converting images:', error);
-
+    
             setErrors(prevErrors => [...prevErrors, {
                 errorType: 'network_error',
                 message: error.message,
                 originalError: error.message
             }]);
-
+    
             toast.error(`❌ ${error.message}`);
-
+    
             // Add all files to retry queue on network error
             setRetryQueue(images);
             toast.info(`ℹ️ All files added to retry queue due to network error`);
-
+    
         } finally {
             setIsConverting(false);
         }
@@ -485,7 +657,32 @@ function App() {
             />
             <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
                 <h1 className="text-2xl font-bold text-gray-800 mb-6">Image to WebP Converter</h1>
-
+                
+                {/* Performance: Performance metrics display */}
+                {performanceMetrics.totalProcessingTime > 0 && (
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h3 className="text-sm font-medium text-blue-800 mb-2">Performance Metrics</h3>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                                <span className="font-medium">File Upload:</span>
+                                <span> {performanceMetrics.fileUploadTime.toFixed(2)}ms</span>
+                            </div>
+                            <div>
+                                <span className="font-medium">Conversion:</span>
+                                <span> {performanceMetrics.conversionTime.toFixed(2)}ms</span>
+                            </div>
+                            <div>
+                                <span className="font-medium">Preview Gen:</span>
+                                <span> {performanceMetrics.previewGenerationTime.toFixed(2)}ms</span>
+                            </div>
+                            <div>
+                                <span className="font-medium">Total:</span>
+                                <span> {performanceMetrics.totalProcessingTime.toFixed(2)}ms</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
                 <ImageUpload
                     onFilesUploaded={handleFilesUploaded}
                     isDragging={isDragging}
@@ -495,26 +692,46 @@ function App() {
                 {images.length > 0 && (
                     <div className="mb-6">
                         <h3 className="text-lg font-medium text-gray-800 mb-3">Selected Files ({images.length})</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {images.map((file, index) => (
-                                <ImagePreview
-                                    key={index}
-                                    file={file}
-                                    index={index}
-                                    onRemove={handleRemoveFile}
-                                />
-                            ))}
-                        </div>
+                        {images && images.length > 0 && (
+                            images.length > 20 ? (
+                                <div className="virtualized-grid" style={{ height: '400px', width: '100%' }}>
+                                    <VirtualizedGrid
+                                        items={images}
+                                        columnCount={4}
+                                        itemHeight={150}
+                                        containerHeight={400}
+                                        renderItem={({ item, index }) => (
+                                            <ImagePreview
+                                                file={item}
+                                                index={index}
+                                                onRemove={handleRemoveFile}
+                                            />
+                                        )}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {images.map((file, index) => (
+                                        <ImagePreview
+                                            key={index}
+                                            file={file}
+                                            index={index}
+                                            onRemove={handleRemoveFile}
+                                        />
+                                    ))}
+                                </div>
+                            )
+                        )}
                     </div>
                 )}
 
                 <SettingsPanel
                     preset={preset}
-                    quality={quality}
-                    resizeWidth={resizeWidth}
+                    quality={debouncedQuality}
+                    resizeWidth={debouncedResizeWidth}
                     onPresetChange={handlePresetChange}
-                    onQualityChange={setQuality}
-                    onResizeWidthChange={setResizeWidth}
+                    onQualityChange={handleQualityChange}
+                    onResizeWidthChange={handleResizeWidthChange}
                 />
 
                 <div className="flex gap-4 mb-4">
@@ -589,18 +806,43 @@ function App() {
                     </div>
                 )}
 
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {convertedImages.map((image, index) => (
-                        <ConvertedImage
-                            key={index}
-                            image={image}
-                            onDownload={handleDownload}
-                            onCompare={() => {
-                                setShowComparison(true);
-                                setComparisonIndex(index);
-                            }}
-                        />
-                    ))}
+                <div className="mt-6">
+                    {convertedImages && convertedImages.length > 0 && (
+                        convertedImages.length > 20 ? (
+                            <div className="virtualized-grid" style={{ height: '400px', width: '100%' }}>
+                                <VirtualizedGrid
+                                    items={convertedImages}
+                                    columnCount={4}
+                                    itemHeight={200}
+                                    containerHeight={400}
+                                    renderItem={({ item, index }) => (
+                                        <ConvertedImage
+                                            image={item}
+                                            onDownload={handleDownload}
+                                            onCompare={() => {
+                                                setShowComparison(true);
+                                                setComparisonIndex(index);
+                                            }}
+                                        />
+                                    )}
+                                />
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {convertedImages.map((image, index) => (
+                                    <ConvertedImage
+                                        key={index}
+                                        image={image}
+                                        onDownload={handleDownload}
+                                        onCompare={() => {
+                                            setShowComparison(true);
+                                            setComparisonIndex(index);
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        )
+                    )}
                 </div>
 
                 <ComparisonModal

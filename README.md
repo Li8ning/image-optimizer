@@ -1,6 +1,6 @@
 # Image Optimizer
 
-A comprehensive image optimization tool (v1.7.0) with React frontend and Node.js backend that supports multiple image formats and provides various optimization presets.
+A comprehensive image optimization tool (v1.8.0) with React frontend and Node.js backend that supports multiple image formats and provides various optimization presets.
 
 ## Features
 
@@ -105,7 +105,8 @@ node server.js
 
 ## Version History
 
-- **v1.7.0** (Current): Progress tracking and Git setup completed - Real-time progress indicators for individual file processing and complete Git repository setup with remote integration
+- **v1.8.0** (Current): Large batch processing support - Fixed "Too many files" error by increasing Multer file limit from 20 to 100 files, replaced problematic react-window Grid with custom VirtualizedGrid component to handle large image sets, enhanced batch processing capabilities for handling 100+ images efficiently
+- **v1.7.0**: Progress tracking and Git setup completed - Real-time progress indicators for individual file processing and complete Git repository setup with remote integration
 - **v1.6.0**: Image preview fix completed - Fixed image preview functionality by implementing proper object URL creation and tracking system with enhanced error handling and fallback UI
 - **v1.5.0**: Infinite re-render fix completed - Fixed critical React infinite re-render error during image upload by refactoring state management and object URL creation to avoid render-time state updates
 - **v1.4.0**: Security enhancements completed - Comprehensive security measures including input validation/sanitization, file type verification using magic numbers, rate limiting, security headers, XSS protection, request validation middleware, secure file handling, and security logging

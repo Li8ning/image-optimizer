@@ -17,6 +17,7 @@ const ImagePreview = ({ file, index, onRemove }) => {
                         src={file.preview}
                         alt={file.name}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                         onError={(e) => {
                             console.error('Image preview failed to load:', file.name, 'Preview URL:', file.preview);
                             e.target.style.display = 'none';

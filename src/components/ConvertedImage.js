@@ -16,6 +16,7 @@ const ConvertedImage = ({ image, onDownload, onCompare }) => {
                     src={image.preview}
                     alt={`Converted ${image.name}`}
                     className="w-full h-32 object-cover rounded-md mb-2"
+                    loading="lazy"
                     onError={(e) => {
                         console.error('Converted image preview failed to load:', image.name, 'Preview URL:', image.preview);
                         e.target.style.display = 'none';
