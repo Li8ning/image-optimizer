@@ -1,13 +1,6 @@
 import React from 'react';
 
 const ConvertedImage = ({ image, onDownload, onCompare }) => {
-    const formatFileSize = (bytes) => {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    };
 
     return (
         <div className="bg-gray-50 rounded-lg p-4 shadow-sm">
@@ -17,11 +10,11 @@ const ConvertedImage = ({ image, onDownload, onCompare }) => {
                     alt={`Converted ${image.name}`}
                     className="w-full h-32 object-cover rounded-md mb-2"
                     loading="lazy"
-                    onError={(e) => {
+                    onError={() => {
                         console.error('Converted image preview failed to load:', image.name, 'Preview URL:', image.preview);
-                        e.target.style.display = 'none';
+                        event.target.style.display = 'none';
                     }}
-                    onLoad={(e) => {
+                    onLoad={() => {
                         console.log('Converted image preview loaded successfully:', image.name);
                     }}
                 />

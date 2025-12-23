@@ -56,11 +56,11 @@ const ComparisonModal = ({ show, originalImage, convertedImage, onClose, onPrevi
                                         src={convertedImage.preview}
                                         alt="Converted"
                                         className="w-full max-h-64 object-contain rounded-md"
-                                        onError={(e) => {
+                                        onError={() => {
                                             console.error('Converted image preview failed to load in comparison:', convertedImage.name, 'Preview URL:', convertedImage.preview);
-                                            e.target.style.display = 'none';
+                                            event.target.style.display = 'none';
                                         }}
-                                        onLoad={(e) => {
+                                        onLoad={() => {
                                             console.log('Converted image preview loaded successfully in comparison:', convertedImage.name);
                                         }}
                                     />

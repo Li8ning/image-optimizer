@@ -5,7 +5,9 @@ const SettingsPanel = ({ preset, quality, resizeWidth, onPresetChange, onQuality
         'Custom': { quality: 80, resizeWidth: 0 },
         'Web': { quality: 75, resizeWidth: 1200 },
         'Print': { quality: 95, resizeWidth: 0 },
-        'Social Media': { quality: 85, resizeWidth: 1600 }
+        'Social Media': { quality: 85, resizeWidth: 1600 },
+        'Mobile': { quality: 70, resizeWidth: 800 },
+        'Thumbnail': { quality: 60, resizeWidth: 300 }
     };
 
     const handlePresetChange = (e) => {
@@ -30,6 +32,8 @@ const SettingsPanel = ({ preset, quality, resizeWidth, onPresetChange, onQuality
                 <option value="Web">Web (Quality: 75, Resize: 1200px max)</option>
                 <option value="Print">Print (Quality: 95, No Resize)</option>
                 <option value="Social Media">Social Media (Quality: 85, Resize: 1600px max)</option>
+                <option value="Mobile">Mobile (Quality: 70, Resize: 800px max)</option>
+                <option value="Thumbnail">Thumbnail (Quality: 60, Resize: 300px max)</option>
             </select>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">

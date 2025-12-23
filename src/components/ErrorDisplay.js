@@ -1,5 +1,4 @@
 import React from 'react';
-import { toast } from 'react-toastify';
 
 const ErrorDisplay = ({ errors, onClearErrors }) => {
     if (errors.length === 0) return null;

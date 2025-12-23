@@ -1,7 +1,6 @@
 import React from 'react';
-import { toast } from 'react-toastify';
 
-const ImageUpload = ({ onFilesUploaded, isDragging, setIsDragging }) => {
+const ImageUpload = ({ onFilesUploaded, setIsDragging }) => {
     const handleDragOver = (e) => {
         e.preventDefault();
         e.stopPropagation();

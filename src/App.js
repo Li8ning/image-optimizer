@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -102,11 +102,8 @@ import ApiService from './services/apiService.js';
 import {
     validateFiles,
     formatFileSize,
-    calculateSizeSavings,
     cleanupObjectURLs,
-    createFileWithPreview,
-    MAX_FILE_SIZE,
-    ALLOWED_FILE_TYPES
+    createFileWithPreview
 } from './utils/fileUtils.js';
 
 function App() {
@@ -202,7 +199,9 @@ function App() {
         'Custom': { quality: 80, resizeWidth: 0 },
         'Web': { quality: 75, resizeWidth: 1200 },
         'Print': { quality: 95, resizeWidth: 0 },
-        'Social Media': { quality: 85, resizeWidth: 1600 }
+        'Social Media': { quality: 85, resizeWidth: 1600 },
+        'Mobile': { quality: 70, resizeWidth: 800 },
+        'Thumbnail': { quality: 60, resizeWidth: 300 }
     };
 
     const handleFilesUploaded = (files) => {
