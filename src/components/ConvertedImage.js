@@ -1,9 +1,20 @@
 import React from 'react';
 
-const ConvertedImage = ({ image, onDownload, onCompare }) => {
+const ConvertedImage = ({ image, onDownload, onCompare, onSelect, isSelected = false }) => {
 
     return (
-        <div className="bg-gray-50 rounded-lg p-4 shadow-sm">
+        <div className="bg-gray-50 rounded-lg p-4 shadow-sm relative">
+            {/* Selection checkbox */}
+            <div className="absolute top-2 right-2 z-10">
+                <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => onSelect(image.name)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    title={isSelected ? 'Deselect image' : 'Select image'}
+                />
+            </div>
+            
             {image.preview && image.previewReady ? (
                 <img
                     src={image.preview}

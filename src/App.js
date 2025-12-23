@@ -94,9 +94,11 @@ import SettingsPanel from './components/SettingsPanel.js';
 import ErrorDisplay from './components/ErrorDisplay.js';
 import ConvertedImage from './components/ConvertedImage.js';
 import ComparisonModal from './components/ComparisonModal.js';
+import BatchOperations from './components/BatchOperations.js';
 
 // Import services
 import ApiService from './services/apiService.js';
+import ZipService from './services/zipService.js';
 
 // Import utilities
 import {
@@ -118,6 +120,10 @@ function App() {
     const [preset, setPreset] = useState('Custom');
     const [errors, setErrors] = useState([]);
     const [retryQueue, setRetryQueue] = useState([]);
+    const [selectedImages, setSelectedImages] = useState([]);
+    const [isDownloadingZip, setIsDownloadingZip] = useState(false);
+    // eslint-disable-next-line no-unused-vars
+    const _isDownloadingZip = isDownloadingZip; // Used for tracking download state
     
     // Performance: Debounced state updates for input fields
     const [debouncedResizeWidth, setDebouncedResizeWidth] = useState(0);
@@ -633,11 +639,103 @@ function App() {
             }
         });
         setConvertedImages([]);
+        setSelectedImages([]);
         toast.info('🗑️ Converted images cleared');
     };
 
     const testMemoryCleanup = () => {
         ApiService.testMemoryCleanup();
+    };
+
+    // Batch Operations: Download all converted images as ZIP
+    const handleDownloadAllAsZip = async () => {
+        if (convertedImages.length === 0) {
+            toast.warning('⚠️ No converted images available for download');
+            return;
+        }
+
+        try {
+            setIsDownloadingZip(true);
+            toast.info('📦 Preparing ZIP download...');
+
+            const result = await ZipService.createAndDownloadZip(convertedImages, 'all_converted_images');
+
+            if (result.success) {
+                toast.success(`✅ Successfully downloaded ${result.successfulImages} of ${result.totalImages} images as ZIP`);
+                
+                if (result.failedImages.length > 0) {
+                    toast.warning(`⚠️ ${result.failedImages.length} images failed to download`);
+                    console.error('Failed to download images:', result.failedImages);
+                }
+            } else {
+                toast.error('❌ Failed to create ZIP file');
+            }
+
+        } catch (error) {
+            console.error('Error downloading ZIP:', error);
+            toast.error(`❌ Failed to download ZIP: ${error.message}`);
+        } finally {
+            setIsDownloadingZip(false);
+        }
+    };
+
+    // Batch Operations: Select all images
+    const handleSelectAllImages = () => {
+        const allImageNames = convertedImages.map(image => image.name);
+        setSelectedImages(allImageNames);
+    };
+
+    // Batch Operations: Deselect all images
+    const handleDeselectAllImages = () => {
+        setSelectedImages([]);
+    };
+
+    // Batch Operations: Toggle individual image selection
+    const handleToggleImageSelection = (imageName) => {
+        setSelectedImages(prevSelected => {
+            if (prevSelected.includes(imageName)) {
+                return prevSelected.filter(name => name !== imageName);
+            } else {
+                return [...prevSelected, imageName];
+            }
+        });
+    };
+
+    // Batch Operations: Download selected images as ZIP
+    const handleDownloadSelectedAsZip = async () => {
+        if (selectedImages.length === 0) {
+            toast.warning('⚠️ Please select images first');
+            return;
+        }
+
+        try {
+            setIsDownloadingZip(true);
+            toast.info('📦 Preparing selected images ZIP download...');
+
+            // Filter converted images to only include selected ones
+            const selectedConvertedImages = convertedImages.filter(image =>
+                selectedImages.includes(image.name)
+            );
+
+            const result = await ZipService.createAndDownloadZip(selectedConvertedImages, 'selected_images');
+
+            if (result.success) {
+                toast.success(`✅ Successfully downloaded ${result.successfulImages} of ${result.totalImages} selected images as ZIP`);
+                
+                if (result.failedImages.length > 0) {
+                    toast.warning(`⚠️ ${result.failedImages.length} images failed to download`);
+                    console.error('Failed to download selected images:', result.failedImages);
+                }
+            } else {
+                toast.error('❌ Failed to create ZIP file for selected images');
+            }
+
+        } catch (error) {
+            console.error('Error downloading selected images ZIP:', error);
+            toast.error(`❌ Failed to download selected images ZIP: ${error.message}`);
+        } finally {
+            setIsDownloadingZip(false);
+        }
     };
 
     return (
@@ -805,6 +903,17 @@ function App() {
                     </div>
                 )}
 
+                {convertedImages.length > 0 && (
+                    <BatchOperations
+                        convertedImages={convertedImages}
+                        onDownloadAll={handleDownloadAllAsZip}
+                        onSelectAll={handleSelectAllImages}
+                        onDeselectAll={handleDeselectAllImages}
+                        selectedImages={selectedImages}
+                        onBulkDownload={handleDownloadSelectedAsZip}
+                    />
+                )}
+
                 <div className="mt-6">
                     {convertedImages && convertedImages.length > 0 && (
                         convertedImages.length > 20 ? (
@@ -822,6 +931,8 @@ function App() {
                                                 setShowComparison(true);
                                                 setComparisonIndex(index);
                                             }}
+                                            onSelect={handleToggleImageSelection}
+                                            isSelected={selectedImages.includes(item.name)}
                                         />
                                     )}
                                 />
@@ -837,6 +948,8 @@ function App() {
                                             setShowComparison(true);
                                             setComparisonIndex(index);
                                         }}
+                                        onSelect={handleToggleImageSelection}
+                                        isSelected={selectedImages.includes(image.name)}
                                     />
                                 ))}
                             </div>

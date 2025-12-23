@@ -7,6 +7,7 @@ A comprehensive image optimization tool (v1.8.0) with React frontend and Node.js
 - **Multiple Format Support**: JPG, PNG, WEBP, GIF, BMP, TIFF
 - **Optimization Presets**: Web, Print, Social Media, Mobile, Thumbnail
 - **Batch Processing**: Upload and optimize multiple images at once
+- **Batch Operations**: ZIP download for multiple images, bulk selection and download
 - **Quality Comparison**: Side-by-side comparison of original vs optimized images
 - **Advanced Settings**: Custom quality, dimensions, and compression options
 - **Memory Management**: Proper cleanup of object URLs to prevent memory leaks
@@ -105,7 +106,8 @@ node server.js
 
 ## Version History
 
-- **v1.8.0** (Current): Large batch processing support - Fixed "Too many files" error by increasing Multer file limit from 20 to 100 files, replaced problematic react-window Grid with custom VirtualizedGrid component to handle large image sets, enhanced batch processing capabilities for handling 100+ images efficiently
+- **v1.9.0** (Current): Batch Operations feature - Added ZIP download functionality for multiple converted images, implemented bulk selection and download operations, enhanced user interface with batch operation controls, comprehensive error handling for batch processes
+- **v1.8.0**: Large batch processing support - Fixed "Too many files" error by increasing Multer file limit from 20 to 100 files, replaced problematic react-window Grid with custom VirtualizedGrid component to handle large image sets, enhanced batch processing capabilities for handling 100+ images efficiently
 - **v1.7.0**: Progress tracking and Git setup completed - Real-time progress indicators for individual file processing and complete Git repository setup with remote integration
 - **v1.6.0**: Image preview fix completed - Fixed image preview functionality by implementing proper object URL creation and tracking system with enhanced error handling and fallback UI
 - **v1.5.0**: Infinite re-render fix completed - Fixed critical React infinite re-render error during image upload by refactoring state management and object URL creation to avoid render-time state updates
