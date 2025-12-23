@@ -125,6 +125,24 @@ function App() {
     // eslint-disable-next-line no-unused-vars
     const _isDownloadingZip = isDownloadingZip; // Used for tracking download state
     
+    // Ref for main content area for focus management
+    const mainContentRef = useRef(null);
+    
+    // Ref for screen reader announcements
+    const screenReaderAnnouncementRef = useRef(null);
+    
+    // Function to announce messages to screen readers
+    // eslint-disable-next-line no-unused-vars
+    const announceToScreenReader = (message) => {
+        if (screenReaderAnnouncementRef.current) {
+            screenReaderAnnouncementRef.current.textContent = message;
+            // Use aria-live region to announce changes
+            setTimeout(() => {
+                screenReaderAnnouncementRef.current.textContent = '';
+            }, 5000);
+        }
+    };
+    
     // Performance: Debounced state updates for input fields
     const [debouncedResizeWidth, setDebouncedResizeWidth] = useState(0);
     const [debouncedQuality, setDebouncedQuality] = useState(80);
@@ -321,6 +339,7 @@ function App() {
             console.log(`PERFORMANCE: File upload processed in ${fileUploadDuration.toFixed(2)}ms`);
     
             toast.success(`✅ ${validFiles.length} file(s) uploaded successfully`);
+            announceToScreenReader(`${validFiles.length} file(s) uploaded successfully. Ready for conversion.`);
     
             // Fix: Reset the file input to allow re-selecting the same files
             // This prevents the browser from caching the file selection
@@ -495,6 +514,7 @@ function App() {
                     console.log(`PERFORMANCE: Preview generation completed in ${previewGenerationDuration.toFixed(2)}ms`);
     
                     toast.success(`✅ Successfully converted ${imagesWithPreviews.length} image(s)`);
+                    announceToScreenReader(`Successfully converted ${imagesWithPreviews.length} image(s) to WebP format.`);
                 };
     
                 fetchConvertedImages();
@@ -739,7 +759,16 @@ function App() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 p-6">
+        <div className="min-h-screen bg-gray-100 p-6" role="main" aria-label="Image to WebP Converter Application" ref={mainContentRef}>
+            {/* Screen reader announcement region */}
+            <div
+                ref={screenReaderAnnouncementRef}
+                aria-live="polite"
+                aria-atomic="true"
+                className="sr-only"
+                style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: '0' }}
+            ></div>
+            
             <ToastContainer
                 position="top-right"
                 autoClose={5000}
@@ -752,8 +781,8 @@ function App() {
                 pauseOnHover
                 theme="colored"
             />
-            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
-                <h1 className="text-2xl font-bold text-gray-800 mb-6">Image to WebP Converter</h1>
+            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6" role="region" aria-labelledby="app-title">
+                <h1 id="app-title" className="text-2xl font-bold text-gray-800 mb-6">Image to WebP Converter</h1>
                 
                 {/* Performance: Performance metrics display */}
                 {performanceMetrics.totalProcessingTime > 0 && (
@@ -831,13 +860,25 @@ function App() {
                     onResizeWidthChange={handleResizeWidthChange}
                 />
 
-                <div className="flex gap-4 mb-4">
+                <div className="flex gap-4 mb-4" role="toolbar" aria-label="Image conversion actions">
                     <button
                         onClick={handleConvert}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                if (!isConverting && images.length > 0) {
+                                    handleConvert();
+                                }
+                            }
+                        }}
                         disabled={isConverting || images.length === 0}
                         className={`flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {
                             (isConverting || images.length === 0) ? 'opacity-50 cursor-not-allowed' : ''
                         }`}
+                        aria-label="Convert images to WebP format"
+                        aria-disabled={isConverting || images.length === 0}
+                        aria-busy={isConverting}
+                        tabIndex={isConverting || images.length === 0 ? -1 : 0}
                     >
                         {isConverting ? 'Converting...' : 'Convert to WebP'}
                     </button>
@@ -845,10 +886,22 @@ function App() {
                     {retryQueue.length > 0 && (
                         <button
                             onClick={handleRetryConversion}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    if (!isConverting) {
+                                        handleRetryConversion();
+                                    }
+                                }
+                            }}
                             disabled={isConverting}
                             className={`flex-1 bg-yellow-600 text-white py-2 px-4 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 {
                                 isConverting ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
+                            aria-label={`Retry conversion of ${retryQueue.length} failed images`}
+                            aria-disabled={isConverting}
+                            aria-busy={isConverting}
+                            tabIndex={isConverting ? -1 : 0}
                         >
                             {isConverting ? 'Retrying...' : `Retry (${retryQueue.length})`}
                         </button>

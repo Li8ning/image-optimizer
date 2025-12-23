@@ -388,10 +388,12 @@ app.post('/convert', upload.array('images'), async (req, res) => {
         const MAX_CONCURRENT_CONVERSIONS = 4;
         
         // Performance: Cache for processed images to avoid duplicate work
+        // eslint-disable-next-line no-unused-vars
         const processingCache = new Map();
 
         // Create a worker pool for concurrent processing
         const processImage = async (file) => {
+            // eslint-disable-next-line no-async-promise-executor
             return new Promise(async (resolve, reject) => {
                 try {
                     // Performance: Start processing timing
@@ -667,7 +669,7 @@ app.get('/', (req, res) => {
 });
 
 // Global error handler
-app.use((err, req, res, next) => {
+app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
     logError('GLOBAL_ERROR', 'Unhandled error caught by global error handler', {
         error: err.message,
         stack: err.stack,

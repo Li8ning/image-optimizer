@@ -34,7 +34,7 @@ const ImageUpload = ({ onFilesUploaded, setIsDragging }) => {
 
     return (
         <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">Upload Images</label>
+            <label htmlFor="fileInput" className="block text-gray-700 font-medium mb-2">Upload Images</label>
             <div
                 className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all {
                     isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50'
@@ -44,6 +44,15 @@ const ImageUpload = ({ onFilesUploaded, setIsDragging }) => {
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onClick={() => document.getElementById('fileInput').click()}
+                role="button"
+                tabIndex="0"
+                aria-label="Drag and drop images here or click to browse files"
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        document.getElementById('fileInput').click();
+                    }
+                }}
             >
                 <input
                     type="file"
@@ -52,6 +61,8 @@ const ImageUpload = ({ onFilesUploaded, setIsDragging }) => {
                     multiple
                     onChange={handleFileInputChange}
                     className="hidden"
+                    aria-label="Select images to upload"
+                    aria-describedby="file-input-description"
                 />
                 <div className="flex flex-col items-center justify-center">
                     <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,7 +70,7 @@ const ImageUpload = ({ onFilesUploaded, setIsDragging }) => {
                     </svg>
                     <p className="text-gray-600 font-medium mb-1">Drag & drop images here</p>
                     <p className="text-sm text-gray-500">or click to browse files</p>
-                    <p className="text-xs text-gray-400 mt-2">Supports: JPG, PNG, WEBP, GIF, etc.</p>
+                    <p id="file-input-description" className="text-xs text-gray-400 mt-2">Supports: JPG, PNG, WEBP, GIF, etc.</p>
                 </div>
             </div>
         </div>

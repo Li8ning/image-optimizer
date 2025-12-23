@@ -1,7 +1,7 @@
 {
   "name": "image-optimizer",
-  "version": "1.9.0",
-  "description": "Advanced Image Optimizer with batch processing and ZIP download support",
+  "version": "2.0.0",
+  "description": "Advanced Image Optimizer with batch processing, ZIP download support, and full accessibility compliance",
   "main": "index.js",
   "scripts": {
     "start": "react-scripts start",

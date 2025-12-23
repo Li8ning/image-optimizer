@@ -10,12 +10,12 @@ const ImagePreview = ({ file, index, onRemove }) => {
     };
 
     return (
-        <div className="bg-gray-50 rounded-lg p-2 shadow-sm border border-gray-200 flex flex-col h-full">
+        <div className="bg-gray-50 rounded-lg p-2 shadow-sm border border-gray-200 flex flex-col h-full" role="article" aria-label={`Image preview: ${file.name}`}>
             {file.type && file.type.startsWith('image/') && file.preview && file.previewReady && (
                 <div className="w-full h-24 bg-white rounded-md overflow-hidden border border-gray-200 mb-2">
                     <img
                         src={file.preview}
-                        alt={file.name}
+                        alt={`Preview of ${file.name}`}
                         className="w-full h-full object-cover"
                         loading="lazy"
                         onError={() => {
@@ -35,12 +35,20 @@ const ImagePreview = ({ file, index, onRemove }) => {
             )}
 
             <div className="flex justify-between items-center mt-auto">
-                <p className="text-xs text-gray-500 truncate">{file.size ? formatFileSize(file.size) : 'Unknown size'}</p>
+                <p id={`file-size-${index}`} className="text-xs text-gray-500 truncate">{file.size ? formatFileSize(file.size) : 'Unknown size'}</p>
                 <button
                     onClick={() => onRemove(index)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            onRemove(index);
+                        }
+                    }}
                     className="text-red-500 hover:text-red-700 text-sm font-medium ml-2"
                     title="Remove file"
-                    aria-label="Remove file"
+                    aria-label={`Remove ${file.name}`}
+                    aria-describedby={`file-size-${index}`}
+                    tabIndex={0}
                 >
                     ×
                 </button>

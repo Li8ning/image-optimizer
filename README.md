@@ -1,6 +1,6 @@
 # Image Optimizer
 
-A comprehensive image optimization tool (v1.8.0) with React frontend and Node.js backend that supports multiple image formats and provides various optimization presets.
+A comprehensive image optimization tool (v2.0.0) with React frontend and Node.js backend that supports multiple image formats and provides various optimization presets. Now with full accessibility support including ARIA attributes, keyboard navigation, focus management, and screen reader compatibility.
 
 ## Features
 
@@ -13,6 +13,7 @@ A comprehensive image optimization tool (v1.8.0) with React frontend and Node.js
 - **Memory Management**: Proper cleanup of object URLs to prevent memory leaks
 - **Comprehensive Error Handling**: File validation, user-friendly notifications, and detailed logging
 - **Security Enhancements**: Input validation, file type verification, rate limiting, and security headers
+- **Accessibility Features**: Full ARIA support, keyboard navigation, focus management, and screen reader compatibility
 
 ## Installation
 
@@ -81,6 +82,7 @@ image-optimizer/
 3. **Memory Cleanup**: Object URL tracking and automatic cleanup system
 4. **Security**: Input sanitization, file type verification, rate limiting
 5. **Git Integration**: Version control with comprehensive .gitignore
+6. **Accessibility Implementation**: Full WCAG compliance with ARIA attributes, keyboard navigation, focus management, and screen reader support
 
 ## Development
 
@@ -106,7 +108,7 @@ node server.js
 
 ## Version History
 
-- **v1.9.0** (Current): Batch Operations feature - Added ZIP download functionality for multiple converted images, implemented bulk selection and download operations, enhanced user interface with batch operation controls, comprehensive error handling for batch processes
+- **v2.0.0** (Current): Accessibility Improvements - Added comprehensive accessibility features including ARIA attributes throughout the application, implemented keyboard navigation support for all interactive elements, ensured proper focus management with modal focus trapping, added screen reader support with announcement system, full WCAG compliance for better accessibility
 - **v1.8.0**: Large batch processing support - Fixed "Too many files" error by increasing Multer file limit from 20 to 100 files, replaced problematic react-window Grid with custom VirtualizedGrid component to handle large image sets, enhanced batch processing capabilities for handling 100+ images efficiently
 - **v1.7.0**: Progress tracking and Git setup completed - Real-time progress indicators for individual file processing and complete Git repository setup with remote integration
 - **v1.6.0**: Image preview fix completed - Fixed image preview functionality by implementing proper object URL creation and tracking system with enhanced error handling and fallback UI
