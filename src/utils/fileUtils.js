@@ -53,7 +53,8 @@ const formatFileSize = (bytes) => {
 };
 
 const calculateSizeSavings = (originalSize, convertedSize) => {
-    if (!originalSize || !convertedSize || originalSize <= 0) return '0.0';
+    if (!originalSize || originalSize <= 0) return '0.0';
+    if (!convertedSize) return '100.0';
     const savings = ((originalSize - convertedSize) / originalSize) * 100;
     return savings.toFixed(1);
 };

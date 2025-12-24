@@ -1,6 +1,6 @@
 # Image Optimizer
 
-A comprehensive image optimization tool (v2.1.0) with React frontend and Node.js backend that supports multiple image formats and provides various optimization presets. Now with full accessibility support including ARIA attributes, keyboard navigation, focus management, screen reader compatibility, and advanced comparison metrics.
+A comprehensive image optimization tool (v2.2.0) with React frontend and Node.js backend that supports multiple image formats and provides various optimization presets. Now with full accessibility support including ARIA attributes, keyboard navigation, focus management, screen reader compatibility, advanced comparison metrics, and comprehensive testing infrastructure.
 
 ## Features
 
@@ -103,12 +103,17 @@ node server.js
 
 - `npm start`: Starts the development server
 - `npm run build`: Creates a production build
-- `npm test`: Runs tests (if configured)
+- `npm test`: Runs all tests with Jest
+- `npm test -- --coverage`: Runs tests with coverage reporting
+- `npm test -- --watch`: Runs tests in watch mode
+- `npm run lint`: Runs ESLint with auto-fix
+- `npm run lint:check`: Runs ESLint without auto-fix
 - `npm run eject`: Ejects from Create React App (if applicable)
 
 ## Version History
 
-- **v2.1.0** (Current): Comparison Metrics Enhancement - Added detailed comparison metrics to the image comparison feature including file size reduction percentage, bytes saved, and compression ratio. Maintained all accessibility features and fixed React hooks ordering issues for improved stability.
+- **v2.2.0** (Current): Comprehensive Testing Infrastructure - Added complete testing infrastructure with Jest framework, comprehensive unit tests for all core components (7 components, 2 services, 1 utility), integration testing for key workflows, ESLint configuration with build directory exclusion, achieved 86.66% service coverage and 94.64% utility coverage, fixed all ESLint errors, and added detailed testing documentation.
+- **v2.1.0**: Comparison Metrics Enhancement - Added detailed comparison metrics to the image comparison feature including file size reduction percentage, bytes saved, and compression ratio. Maintained all accessibility features and fixed React hooks ordering issues for improved stability.
 - **v2.0.0**: Accessibility Improvements - Added comprehensive accessibility features including ARIA attributes throughout the application, implemented keyboard navigation support for all interactive elements, ensured proper focus management with modal focus trapping, added screen reader support with announcement system, full WCAG compliance for better accessibility
 - **v1.8.0**: Large batch processing support - Fixed "Too many files" error by increasing Multer file limit from 20 to 100 files, replaced problematic react-window Grid with custom VirtualizedGrid component to handle large image sets, enhanced batch processing capabilities for handling 100+ images efficiently
 - **v1.7.0**: Progress tracking and Git setup completed - Real-time progress indicators for individual file processing and complete Git repository setup with remote integration
