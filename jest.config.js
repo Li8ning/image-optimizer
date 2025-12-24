@@ -25,9 +25,9 @@ export default {
 
   // An array of regexp pattern strings used to skip coverage collection
   coveragePathIgnorePatterns: [
-    "\\node_modules\\",
-    "\\build\\",
-    "\\coverage\\"
+    "\\node_modules",
+    "\\build",
+    "\\coverage"
   ],
 
   // Indicates which provider should be used to instrument code for coverage
@@ -59,8 +59,8 @@ export default {
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   modulePathIgnorePatterns: [
-    "<rootDir>/node_modules/",
-    "<rootDir>/build/"
+    "<rootDir>/node_modules",
+    "<rootDir>/build"
   ],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
@@ -77,8 +77,8 @@ export default {
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
   testPathIgnorePatterns: [
-    "\\node_modules\\",
-    "\\build\\"
+    "\\node_modules",
+    "\\build"
   ],
 
   // A map from regular expressions to paths to transformers
@@ -88,7 +88,7 @@ export default {
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   transformIgnorePatterns: [
-    "\\node_modules\\",
+    "\\node_modules",
     "\\.pnp\\.[^\\\\]+"
   ],
 
