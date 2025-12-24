@@ -12,8 +12,30 @@ const getEnv = (name, defaultValue) => {
     return defaultValue;
 };
 
+// Helper function to parse file size from environment variable
+const parseFileSize = (sizeString) => {
+    if (!sizeString) return null;
+    
+    // Handle different formats: "10mb", "10MB", "10 mb", "10485760"
+    const cleaned = sizeString.toString().trim().toLowerCase();
+    
+    if (cleaned.endsWith('mb')) {
+        const num = parseFloat(cleaned.replace('mb', ''));
+        return num * 1024 * 1024; // Convert MB to bytes
+    } else if (cleaned.endsWith('kb')) {
+        const num = parseFloat(cleaned.replace('kb', ''));
+        return num * 1024; // Convert KB to bytes
+    } else if (cleaned.endsWith('gb')) {
+        const num = parseFloat(cleaned.replace('gb', ''));
+        return num * 1024 * 1024 * 1024; // Convert GB to bytes
+    } else {
+        // Assume it's already in bytes
+        return parseInt(cleaned);
+    }
+};
+
 // Configuration from environment variables
-const MAX_FILE_SIZE = parseInt(getEnv('MAX_FILE_SIZE', '10485760')) || 10 * 1024 * 1024; // 10MB default
+const MAX_FILE_SIZE = parseFileSize(getEnv('MAX_FILE_SIZE', '10mb')) || 10 * 1024 * 1024; // 10MB default
 const ALLOWED_FILE_TYPES = getEnv('ALLOWED_FILE_TYPES', 'image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff').split(',');
 
 // App configuration

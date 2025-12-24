@@ -260,10 +260,32 @@ const detectFileTypeFromBuffer = (buffer) => {
 };
 
 // Configure multer for file uploads with enhanced validation
+// Helper function to parse file size from environment variable
+const parseFileSize = (sizeString) => {
+    if (!sizeString) return null;
+    
+    // Handle different formats: "10mb", "10MB", "10 mb", "10485760"
+    const cleaned = sizeString.toString().trim().toLowerCase();
+    
+    if (cleaned.endsWith('mb')) {
+        const num = parseFloat(cleaned.replace('mb', ''));
+        return num * 1024 * 1024; // Convert MB to bytes
+    } else if (cleaned.endsWith('kb')) {
+        const num = parseFloat(cleaned.replace('kb', ''));
+        return num * 1024; // Convert KB to bytes
+    } else if (cleaned.endsWith('gb')) {
+        const num = parseFloat(cleaned.replace('gb', ''));
+        return num * 1024 * 1024 * 1024; // Convert GB to bytes
+    } else {
+        // Assume it's already in bytes
+        return parseInt(cleaned);
+    }
+};
+
 const upload = multer({
     dest: 'uploads/',
     limits: {
-        fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024, // Use env var or 10MB default
+        fileSize: parseFileSize(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024, // Use env var or 10MB default
         files: parseInt(process.env.MAX_FILES) || 100, // Use env var or 100 default
     },
     fileFilter: async (req, file, cb) => {
