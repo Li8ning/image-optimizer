@@ -45,7 +45,11 @@ const logSecurityEvent = (eventType, message, details = {}) => {
 };
 
 const app = express();
-const PORT = 3001;
+// Load environment variables from .env file
+import dotenv from 'dotenv';
+dotenv.config();
+
+const PORT = process.env.BACKEND_PORT || process.env.PORT || 3001;
 
 // Security: Configure Helmet for security headers
 app.use(helmet());
@@ -259,8 +263,8 @@ const detectFileTypeFromBuffer = (buffer) => {
 const upload = multer({
     dest: 'uploads/',
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB limit
-        files: 100, // Increased to 100 files at once to handle large batches
+        fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024, // Use env var or 10MB default
+        files: parseInt(process.env.MAX_FILES) || 100, // Use env var or 100 default
     },
     fileFilter: async (req, file, cb) => {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/tiff'];
@@ -666,6 +670,36 @@ app.get('/download/:filename', (req, res) => {
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    try {
+        const healthStatus = {
+            status: 'healthy',
+            timestamp: new Date().toISOString(),
+            uptime: process.uptime(),
+            environment: process.env.NODE_ENV || 'development',
+            version: '2.2.0',
+            appName: process.env.APP_NAME || 'Image Optimizer',
+            maxFileSize: process.env.MAX_FILE_SIZE || '10MB',
+            maxFiles: process.env.MAX_FILES || '100',
+            backendPort: PORT,
+            frontendPort: process.env.PORT || 3000
+        };
+        
+        res.status(200).json(healthStatus);
+    } catch (error) {
+        logError('HEALTH_CHECK_ERROR', 'Health check endpoint failed', {
+            error: error.message,
+            stack: error.stack
+        });
+        res.status(503).json({
+            status: 'unhealthy',
+            error: 'Health check failed',
+            timestamp: new Date().toISOString()
+        });
+    }
 });
 
 // Global error handler

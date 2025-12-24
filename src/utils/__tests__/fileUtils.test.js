@@ -18,8 +18,8 @@ describe('File Utility Functions', () => {
       ];
       
       const result = validateFiles(mockFiles);
-      expect(result.validFiles.length).toBe(2);
-      expect(result.validationErrors.length).toBe(0);
+      expect(result.validFiles).toHaveLength(2);
+      expect(result.validationErrors).toHaveLength(0);
     });
 
     it('should reject files with invalid types', () => {
@@ -29,8 +29,8 @@ describe('File Utility Functions', () => {
       ];
       
       const result = validateFiles(mockFiles);
-      expect(result.validFiles.length).toBe(0);
-      expect(result.validationErrors.length).toBe(2);
+      expect(result.validFiles).toHaveLength(0);
+      expect(result.validationErrors).toHaveLength(2);
       expect(result.validationErrors[0].errorType).toBe('invalid_type');
     });
 
@@ -42,8 +42,8 @@ describe('File Utility Functions', () => {
       };
       
       const result = validateFiles([largeFile]);
-      expect(result.validFiles.length).toBe(0);
-      expect(result.validationErrors.length).toBe(1);
+      expect(result.validFiles).toHaveLength(0);
+      expect(result.validationErrors).toHaveLength(1);
       expect(result.validationErrors[0].errorType).toBe('size_limit');
     });
 
@@ -55,8 +55,8 @@ describe('File Utility Functions', () => {
       };
       
       const result = validateFiles([mockFile]);
-      expect(result.validFiles.length).toBe(0);
-      expect(result.validationErrors.length).toBe(1);
+      expect(result.validFiles).toHaveLength(0);
+      expect(result.validationErrors).toHaveLength(1);
       expect(result.validationErrors[0].errorType).toBe('invalid_type');
     });
   });

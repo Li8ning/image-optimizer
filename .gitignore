@@ -13,7 +13,11 @@ dist/
 .env.local
 .env.development
 .env.test
+.env.staging
 .env.production
+
+# Keep example environment file
+!.env.example
 
 # Logs
 error_logs.txt

@@ -1,7 +1,25 @@
 // File utility functions
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/tiff'];
+// Get environment variables with fallback defaults
+const getEnv = (name, defaultValue) => {
+    if (typeof window !== 'undefined' && window.process && window.process.env) {
+        // Browser environment (for testing)
+        return window.process.env[name] || defaultValue;
+    } else if (typeof process !== 'undefined' && process.env) {
+        // Node.js environment
+        return process.env[name] || defaultValue;
+    }
+    return defaultValue;
+};
+
+// Configuration from environment variables
+const MAX_FILE_SIZE = parseInt(getEnv('MAX_FILE_SIZE', '10485760')) || 10 * 1024 * 1024; // 10MB default
+const ALLOWED_FILE_TYPES = getEnv('ALLOWED_FILE_TYPES', 'image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff').split(',');
+
+// App configuration
+const APP_NAME = getEnv('APP_NAME', 'Image Optimizer');
+const DEFAULT_QUALITY = parseInt(getEnv('DEFAULT_QUALITY', '80')) || 80;
+const DEFAULT_RESIZE_WIDTH = parseInt(getEnv('DEFAULT_RESIZE_WIDTH', '1920')) || 1920;
 
 const validateFiles = (files) => {
     const validationErrors = [];
@@ -129,5 +147,8 @@ export {
     createTrackedObjectURL,
     createFileWithPreview,
     MAX_FILE_SIZE,
-    ALLOWED_FILE_TYPES
+    ALLOWED_FILE_TYPES,
+    APP_NAME,
+    DEFAULT_QUALITY,
+    DEFAULT_RESIZE_WIDTH
 };

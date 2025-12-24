@@ -21,6 +21,7 @@ A comprehensive image optimization tool (v2.2.0) with React frontend and Node.js
 - Node.js (v14 or higher)
 - npm or yarn
 - Git
+- Docker (optional, for containerized deployment)
 
 ### Setup
 
@@ -33,9 +34,16 @@ cd image-optimizer
 
 # Install dependencies
 npm install
+```
 
-# Start the development server
-npm start
+### Quick Start
+
+```bash
+# Start both frontend and backend with one command
+npm run start:full
+
+# Or use the start script with environment
+./start-app.sh development
 ```
 
 ## Usage
@@ -89,19 +97,27 @@ image-optimizer/
 ### Running the Project
 
 ```bash
-# Development mode
+# Development mode (frontend only)
 npm start
+
+# Backend server only
+npm run server
+
+# Start both frontend and backend (recommended)
+npm run start:full
 
 # Production build
 npm run build
 
 # Start production server
-node server.js
+npm run server
 ```
 
 ### Available Scripts
 
-- `npm start`: Starts the development server
+- `npm start`: Starts the React development server (frontend)
+- `npm run server`: Starts the Node.js backend server
+- `npm run start:full`: Starts both frontend and backend simultaneously
 - `npm run build`: Creates a production build
 - `npm test`: Runs all tests with Jest
 - `npm test -- --coverage`: Runs tests with coverage reporting
@@ -110,8 +126,117 @@ node server.js
 - `npm run lint:check`: Runs ESLint without auto-fix
 - `npm run eject`: Ejects from Create React App (if applicable)
 
+### Environment Configuration
+
+The application supports environment-specific configuration:
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Or use environment-specific files
+cp .env.development .env  # Development
+cp .env.staging .env      # Staging
+cp .env.production .env   # Production
+```
+
+Edit the `.env` file to configure:
+- `APP_NAME`: Application name
+- `PORT`: Frontend port (default: 3000)
+- `BACKEND_PORT`: Backend port (default: 3001)
+- `MAX_FILE_SIZE`: Maximum upload size
+- `ALLOWED_FILE_TYPES`: Supported file types
+- `DEFAULT_QUALITY`: Default image quality
+- `DEFAULT_RESIZE_WIDTH`: Default resize width
+
+### Docker Deployment
+
+```bash
+# Build Docker image
+docker build -t image-optimizer .
+
+# Run container
+docker run -p 3000:3000 -p 3001:3001 image-optimizer
+```
+
+## Deployment Automation
+
+### CI/CD Pipeline
+
+The project includes a comprehensive CI/CD pipeline using GitHub Actions:
+
+**Workflow**: `.github/workflows/ci-cd.yml`
+
+**Features:**
+- Continuous Integration on every push/pull request
+- Automated testing with Jest
+- ESLint code quality checks
+- Production build generation
+- Environment-specific deployment (staging/production)
+- Docker image building and pushing
+
+**Triggers:**
+- Pushes to `main` or `develop` branches
+- Pull requests targeting `main` or `develop`
+
+### Deployment Scripts
+
+**Available Scripts:**
+
+1. **deploy.sh**: Main deployment script
+   ```bash
+   ./deployment/scripts/deploy.sh --env staging
+   ```
+
+2. **health-check.sh**: Health monitoring
+   ```bash
+   ./deployment/scripts/health-check.sh --url http://localhost:3001/health
+   ```
+
+3. **start-app.sh**: Combined startup
+   ```bash
+   ./start-app.sh production
+   ```
+
+### Deployment Workflow
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Run tests
+npm test
+
+# 3. Build for production
+npm run build
+
+# 4. Start the application
+npm run start:full
+
+# 5. Verify health
+curl http://localhost:3001/health
+```
+
+### Environment Variables
+
+Create `.env` files for different environments:
+
+```bash
+# Development environment
+cp .env.example .env.development
+
+# Staging environment
+cp .env.example .env.staging
+
+# Production environment
+cp .env.example .env.production
+```
+
+Then edit the files to set environment-specific values.
+
 ## Version History
 
+- **v2.3.0** (Upcoming): Deployment Automation - Comprehensive CI/CD pipeline with GitHub Actions, environment-specific configuration, deployment scripts, Docker support, health monitoring, and centralized configuration management. One-command startup with port conflict resolution.
 - **v2.2.0** (Current): Comprehensive Testing Infrastructure - Added complete testing infrastructure with Jest framework, comprehensive unit tests for all core components (7 components, 2 services, 1 utility), integration testing for key workflows, ESLint configuration with build directory exclusion, achieved 86.66% service coverage and 94.64% utility coverage, fixed all ESLint errors, and added detailed testing documentation.
 - **v2.1.0**: Comparison Metrics Enhancement - Added detailed comparison metrics to the image comparison feature including file size reduction percentage, bytes saved, and compression ratio. Maintained all accessibility features and fixed React hooks ordering issues for improved stability.
 - **v2.0.0**: Accessibility Improvements - Added comprehensive accessibility features including ARIA attributes throughout the application, implemented keyboard navigation support for all interactive elements, ensured proper focus management with modal focus trapping, added screen reader support with announcement system, full WCAG compliance for better accessibility
