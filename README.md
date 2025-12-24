@@ -1,6 +1,6 @@
 # Image Optimizer
 
-A comprehensive image optimization tool (v2.0.0) with React frontend and Node.js backend that supports multiple image formats and provides various optimization presets. Now with full accessibility support including ARIA attributes, keyboard navigation, focus management, and screen reader compatibility.
+A comprehensive image optimization tool (v2.1.0) with React frontend and Node.js backend that supports multiple image formats and provides various optimization presets. Now with full accessibility support including ARIA attributes, keyboard navigation, focus management, screen reader compatibility, and advanced comparison metrics.
 
 ## Features
 
@@ -8,7 +8,7 @@ A comprehensive image optimization tool (v2.0.0) with React frontend and Node.js
 - **Optimization Presets**: Web, Print, Social Media, Mobile, Thumbnail
 - **Batch Processing**: Upload and optimize multiple images at once
 - **Batch Operations**: ZIP download for multiple images, bulk selection and download
-- **Quality Comparison**: Side-by-side comparison of original vs optimized images
+- **Quality Comparison**: Side-by-side comparison of original vs optimized images with detailed comparison metrics (file size reduction, bytes saved, compression ratio)
 - **Advanced Settings**: Custom quality, dimensions, and compression options
 - **Memory Management**: Proper cleanup of object URLs to prevent memory leaks
 - **Comprehensive Error Handling**: File validation, user-friendly notifications, and detailed logging
@@ -108,7 +108,8 @@ node server.js
 
 ## Version History
 
-- **v2.0.0** (Current): Accessibility Improvements - Added comprehensive accessibility features including ARIA attributes throughout the application, implemented keyboard navigation support for all interactive elements, ensured proper focus management with modal focus trapping, added screen reader support with announcement system, full WCAG compliance for better accessibility
+- **v2.1.0** (Current): Comparison Metrics Enhancement - Added detailed comparison metrics to the image comparison feature including file size reduction percentage, bytes saved, and compression ratio. Maintained all accessibility features and fixed React hooks ordering issues for improved stability.
+- **v2.0.0**: Accessibility Improvements - Added comprehensive accessibility features including ARIA attributes throughout the application, implemented keyboard navigation support for all interactive elements, ensured proper focus management with modal focus trapping, added screen reader support with announcement system, full WCAG compliance for better accessibility
 - **v1.8.0**: Large batch processing support - Fixed "Too many files" error by increasing Multer file limit from 20 to 100 files, replaced problematic react-window Grid with custom VirtualizedGrid component to handle large image sets, enhanced batch processing capabilities for handling 100+ images efficiently
 - **v1.7.0**: Progress tracking and Git setup completed - Real-time progress indicators for individual file processing and complete Git repository setup with remote integration
 - **v1.6.0**: Image preview fix completed - Fixed image preview functionality by implementing proper object URL creation and tracking system with enhanced error handling and fallback UI

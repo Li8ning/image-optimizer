@@ -111,12 +111,11 @@ const ComparisonModal = ({ show, originalImage, convertedImage, onClose, onPrevi
                                 {convertedImage?.preview && convertedImage?.previewReady ? (
                                     <img
                                         src={convertedImage.preview}
-                                        alt={`Converted WebP version of ${convertedImage.name}`}
+                                        alt={`Converted WebP version of ${originalImage.name}`}
                                         className="w-full max-h-64 object-contain rounded-md"
                                         aria-describedby="converted-image-title"
                                         onError={() => {
                                             console.error('Converted image preview failed to load in comparison:', convertedImage.name, 'Preview URL:', convertedImage.preview);
-                                            event.target.style.display = 'none';
                                         }}
                                         onLoad={() => {
                                             console.log('Converted image preview loaded successfully in comparison:', convertedImage.name);

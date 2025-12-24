@@ -1,6 +1,6 @@
 {
   "name": "image-optimizer",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Advanced Image Optimizer with batch processing, ZIP download support, and full accessibility compliance",
   "main": "index.js",
   "scripts": {
