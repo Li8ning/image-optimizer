@@ -24,6 +24,62 @@ This creates a `dist/` folder with optimized static files.
 
 Vercel provides the easiest deployment experience for Vite apps.
 
+## Vercel Deployment Guide
+
+### Prerequisites on Vercel.com
+
+1. **Create Vercel Account**
+   - Go to https://vercel.com
+   - Sign up with GitHub, GitLab, or email
+
+2. **Connect GitHub Repository**
+   - Click "Add New Project"
+   - Select "Import Git Repository"
+   - Choose: https://github.com/Li8ning/image-optimizer
+
+3. **Configure Project**
+   - Framework Preset: Vite (automatically detected)
+   - Build Command: `npm run build` (pre-filled)
+   - Output Directory: `dist` (pre-filled)
+   - Environment Variables: None required (no backend)
+
+4. **Deploy**
+   - Click "Deploy"
+   - Wait for build to complete (~2-3 minutes)
+
+5. **Custom Domain (Optional)**
+   - Go to Project Settings → Domains
+   - Add your custom domain
+   - Configure DNS records
+
+### Local Setup for Deployment
+
+```bash
+# Install Vercel CLI (optional)
+npm i -g vercel
+
+# Deploy from CLI
+vercel --prod
+```
+
+### After First Deployment
+
+- Vercel will automatically deploy on every push to main branch
+- Preview deployments for pull requests
+- Check deployment logs for any errors
+
+#### Vercel Configuration
+
+A `vercel.json` file is included in the root directory:
+
+```json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite"
+}
+```
+
 #### Automatic Deployment
 
 1. Push your code to a GitHub repository
@@ -44,18 +100,6 @@ npm i -g vercel
 
 # Deploy
 vercel
-```
-
-#### Vercel Configuration
-
-Create `vercel.json` in the root directory:
-
-```json
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite"
-}
 ```
 
 ### 2. Netlify

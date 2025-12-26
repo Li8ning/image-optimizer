@@ -32,7 +32,7 @@ export function Header({ className }: HeaderProps) {
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-sm font-medium">
               <Zap className="w-4 h-4" />
-              <span>Client-side only</span>
+              <span>Free & Fast</span>
             </div>
           </div>
         </div>
